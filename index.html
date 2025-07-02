@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COMPLIANCE Ex Hub - Plataforma Completa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f4f7f9;
+        }
+        .nav-link {
+            @apply px-3 py-2 text-sm font-semibold text-gray-200 hover:bg-white/10 rounded-md transition-colors duration-200 whitespace-nowrap;
+        }
+        .nav-link.active {
+            @apply bg-white/20 text-white font-bold;
+        }
+        .content-card {
+            @apply bg-white p-6 rounded-lg shadow-md transition-all duration-300;
+        }
+        .tab-content {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .accordion-header {
+            @apply flex justify-between items-center w-full p-4 text-left font-semibold text-gray-800 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none transition-colors;
+        }
+        .accordion-content {
+            @apply p-4 bg-white border border-t-0 border-gray-200 rounded-b-lg;
+        }
+        .pillar-segment {
+            @apply w-28 h-28 sm:w-32 sm:h-32 md:w-40 md:h-40 bg-white rounded-full flex items-center justify-center text-center p-2 shadow-lg border-4 border-transparent cursor-pointer transition-all duration-300 text-xs sm:text-sm;
+        }
+        .pillar-segment.active {
+            @apply border-[#ffa600] scale-110 shadow-2xl;
+        }
+        .pillar-segment:hover {
+            @apply scale-105;
+        }
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        #login-screen {
+            display: flex;
+        }
+        #app-container {
+            display: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- TELA DE LOGIN -->
+    <div id="login-screen" class="min-h-screen flex-col items-center justify-center bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=2070&auto=format&fit=crop');">
+        <div class="form-container w-full max-w-md p-6 sm:p-8 space-y-6 rounded-xl shadow-lg m-4 sm:m-auto">
+            <div class="text-center">
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900">COMPLIANCE Ex Hub</h1>
+                <p class="mt-2 text-gray-600">Faça login para aceder à sua plataforma.</p>
+            </div>
+            
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label for="email" class="text-sm font-bold text-gray-700 tracking-wide">E-mail</label>
+                    <input id="email" name="email" type="email" autocomplete="email" required class="w-full text-base py-2 border-b border-gray-300 focus:outline-none focus:border-[#003f5c] transition-colors" placeholder="seu.email@exemplo.com">
+                </div>
+                
+                <div class="relative">
+                    <label for="password" class="text-sm font-bold text-gray-700 tracking-wide">Senha</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required class="w-full text-base py-2 border-b border-gray-300 focus:outline-none focus:border-[#003f5c] transition-colors pr-10" placeholder="Introduza a sua senha">
+                    <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 top-5 pr-3 flex items-center text-sm leading-5">
+                        <svg id="eye-open" class="h-6 w-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+                        <svg id="eye-closed" class="h-6 w-6 text-gray-500 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7 .525-1.666 1.32-3.158 2.288-4.418M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.712 4.712A9.96 9.96 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.054 10.054 0 01-1.318 3.135m-4.135-4.135L4.712 4.712zM1 1l22 22" /></svg>
+                    </button>
+                </div>
+                
+                <div class="flex items-center justify-between">
+                    <div class="text-sm"><a href="#" class="font-semibold text-[#003f5c] hover:text-[#005f73]">Esqueceu a sua senha?</a></div>
+                </div>
+                
+                <div>
+                    <button type="submit" class="w-full flex justify-center bg-[#003f5c] text-gray-100 p-3 rounded-full tracking-wide font-semibold shadow-lg cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#005f73] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#003f5c]">Entrar</button>
+                </div>
+            </form>
+            
+            <div class="text-center mt-4">
+                <p class="text-gray-600">Ainda não tem uma conta? <a href="#" class="font-bold text-[#003f5c] hover:text-[#005f73]">Inscrever-se</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL -->
+    <div id="app-container">
+        <header class="bg-[#003f5c] text-white p-4 shadow-lg sticky top-0 z-50 flex items-center justify-between">
+            <h1 class="text-lg sm:text-xl md:text-2xl font-bold truncate">
+                COMPLIANCE Ex Hub - <span class="text-[#ffa600]">COMPANHIA X</span>
+            </h1>
+
+            <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+                <a href="#inicio" class="nav-link">Início</a>
+                <a href="#conceitos" class="nav-link">Conceitos</a>
+                <a href="#pilares" class="nav-link">Pilares</a>
+                <a href="#biblioteca" class="nav-link">Biblioteca</a>
+                <a href="#autoavaliacao" class="nav-link">Autoavaliação</a>
+            </nav>
+
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-white focus:outline-none">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="mobile-menu" class="hidden md:hidden bg-[#005f73] p-4">
+            <nav class="flex flex-col space-y-2">
+                <a href="#inicio" class="nav-link">Início</a>
+                <a href="#conceitos" class="nav-link">Conceitos</a>
+                <a href="#pilares" class="nav-link">Pilares</a>
+                <a href="#biblioteca" class="nav-link">Biblioteca</a>
+                <a href="#autoavaliacao" class="nav-link">Autoavaliação</a>
+            </nav>
+        </div>
+
+        <main id="main-content" class="container mx-auto p-4 md:p-8">
+            
+            <div id="inicio" class="tab-content">
+                <div class="text-center mb-12">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#003f5c] mb-4">Plataforma Interativa de Compliance</h2>
+                    <p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Bem-vindo à sua central de inteligência em compliance. Navegue, aprenda e aplique os princípios fundamentais para fortalecer a integridade da sua organização.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+                     <a href="#conceitos" class="nav-card-link content-card text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#003f5c]">🧠</div><h3 class="text-xl font-bold mb-2">Conceitos Fundamentais</h3><p class="text-gray-600">Comece por aqui para construir a sua base de conhecimento em compliance.</p></a>
+                    <a href="#pilares" class="nav-card-link content-card text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#58508d]">🏛️</div><h3 class="text-xl font-bold mb-2">Os Pilares do Compliance</h3><p class="text-gray-600">Explore os 9 pilares essenciais de um programa de compliance eficaz.</p></a>
+                    <a href="#biblioteca" class="nav-card-link content-card text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#ff6361]">📚</div><h3 class="text-xl font-bold mb-2">Biblioteca de Recursos</h3><p class="text-gray-600">Aceda a templates, checklists e estudos de caso práticos.</p></a>
+                    <a href="#autoavaliacao" class="nav-card-link content-card text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#ffa600]">✅</div><h3 class="text-xl font-bold mb-2">Ferramentas de Autoavaliação</h3><p class="text-gray-600">Meça a maturidade do seu programa e identifique áreas de melhoria.</p></a>
+                </div>
+            </div>
+
+            <div id="conceitos" class="tab-content hidden">
+                <div class="text-center mb-12">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#003f5c] mb-4">Conceitos Fundamentais</h2>
+                    <p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">A base para construir uma cultura de integridade sólida e um programa de compliance eficaz.</p>
+                </div>
+                <div class="max-w-4xl mx-auto space-y-8">
+                    <div class="content-card">
+                        <h3 class="text-xl sm:text-2xl font-bold mb-4">O que é Compliance?</h3>
+                        <p class="mb-6">Compliance é o compromisso de uma organização em cumprir todas as leis, regulamentos, normas e padrões éticos aplicáveis às suas atividades. É mais do que apenas seguir regras; é sobre incorporar a integridade na cultura e nas operações diárias da empresa.</p>
+                        <div class="space-y-2" id="accordion-conceitos">
+                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Legal</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Sob esta ótica, o compliance foca-se em garantir que a empresa adira estritamente à legislação vigente, como a Lei Anticorrupção (Lei 12.846/2013) e a Lei Geral de Proteção de Dados (LGPD). O objetivo é evitar sanções, multas e responsabilidade legal.</p></div></div>
+                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Ética</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Aqui, o compliance vai além da obrigação legal. Trata-se de agir corretamente, mesmo quando ninguém está a observar. Envolve a promoção de valores como honestidade, transparência e justiça, guiando o comportamento de todos na organização através de um Código de Conduta robusto.</p></div></div>
+                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Estratégica</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Nesta visão, o compliance é uma alavanca para o sucesso sustentável. Um programa de compliance forte protege a reputação da marca, abre portas para novos mercados, atrai investimentos (ESG) e torna-se uma vantagem competitiva, demonstrando confiança e fiabilidade a clientes e parceiros.</p></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="pilares" class="tab-content hidden">
+                 <div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#003f5c] mb-4">Os Pilares do Compliance</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Um programa de compliance eficaz é sustentado por pilares interdependentes. Explore cada um para entender a sua função no sistema.</p></div>
+                <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <div class="w-full lg:w-2/5 flex justify-center items-center"><div class="grid grid-cols-3 gap-2 sm:gap-4 place-items-center" id="pillars-diagram"><div class="pillar-segment" data-pillar="p1">Suporte da Alta Administração</div><div class="pillar-segment" data-pillar="p2">Avaliação de Riscos</div><div class="pillar-segment" data-pillar="p3">Código de Conduta e Políticas</div><div class="pillar-segment" data-pillar="p4">Controles Internos</div><div class="pillar-segment" data-pillar="p5">Treinamento e Comunicação</div><div class="pillar-segment" data-pillar="p6">Canais de Denúncia</div><div class="pillar-segment" data-pillar="p7">Investigações Internas</div><div class="pillar-segment" data-pillar="p8">Due Diligence de Terceiros</div><div class="pillar-segment" data-pillar="p9">Monitoramento e Auditoria</div></div></div>
+                    <div class="w-full lg:w-3/5"><div id="pillar-content-area" class="content-card min-h-[300px]"><h3 id="pillar-title" class="text-xl sm:text-2xl font-bold text-[#003f5c] mb-4">Selecione um pilar para ver os detalhes</h3><p id="pillar-text">Clique num pilar para explorar a sua definição, importância e melhores práticas de implementação.</p></div></div>
+                </div>
+            </div>
+
+            <div id="biblioteca" class="tab-content hidden">
+                <div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#003f5c] mb-4">Biblioteca de Recursos</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">O seu repositório central de ferramentas práticas para implementar e fortalecer o seu programa de compliance.</p></div>
+                <div class="flex flex-col md:flex-row gap-8">
+                    <aside class="w-full md:w-1/3 lg:w-1/4"><div class="content-card"><h3 class="text-xl font-bold mb-4">Filtros</h3><div class="space-y-4" id="resource-filters"><div><h4 class="font-semibold mb-2">Tipo de Recurso</h4><div class="space-y-1"><label class="flex items-center"><input type="checkbox" class="form-checkbox h-5 w-5 text-[#003f5c]" value="checklist"> <span class="ml-2">Checklists</span></label><label class="flex items-center"><input type="checkbox" class="form-checkbox h-5 w-5 text-[#003f5c]" value="template"> <span class="ml-2">Templates</span></label><label class="flex items-center"><input type="checkbox" class="form-checkbox h-5 w-5 text-[#003f5c]" value="artigo"> <span class="ml-2">Artigos</span></label></div></div><div><h4 class="font-semibold mb-2">Pilar Relevante</h4><select class="w-full p-2 border border-gray-300 rounded-md" id="pillar-filter"><option value="all">Todos os Pilares</option><option value="p2">Avaliação de Riscos</option><option value="p8">Due Diligence</option><option value="p3">Políticas</option></select></div></div></div></aside>
+                    <section class="w-full md:w-2/3 lg:w-3/4"><div class="grid grid-cols-1 xl:grid-cols-2 gap-6" id="resource-list"></div></section>
+                </div>
+            </div>
+
+            <div id="autoavaliacao" class="tab-content hidden">
+                 <div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[#003f5c] mb-4">Ferramentas de Autoavaliação</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Meça a maturidade do seu programa, identifique lacunas e obtenha recomendações para melhorias.</p></div>
+                <div class="content-card max-w-4xl mx-auto"><h3 class="text-xl sm:text-2xl font-bold mb-4 text-center">Em Breve</h3><p class="text-center text-gray-600">Estamos a desenvolver ferramentas interativas, como um Checklist de Maturidade e um Quiz de Cenários Éticos, para o ajudar a avaliar e aprimorar o seu programa de compliance. Volte em breve!</p><div class="text-6xl text-center mt-6 text-[#ffa600]">🛠️</div></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- LÓGICA DE LOGIN ---
+            const loginScreen = document.getElementById('login-screen');
+            const appContainer = document.getElementById('app-container');
+            const loginForm = document.getElementById('loginForm');
+            const togglePassword = document.getElementById('togglePassword');
+            const passwordInput = document.getElementById('password');
+
+            loginForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                // Simulação de autenticação bem-sucedida
+                loginScreen.style.display = 'none';
+                appContainer.style.display = 'block';
+                // Inicia a aplicação na aba de início
+                switchTab('#inicio');
+            });
+
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                document.getElementById('eye-open').classList.toggle('hidden');
+                document.getElementById('eye-closed').classList.toggle('hidden');
+            });
+
+            // --- LÓGICA DA APLICAÇÃO PRINCIPAL ---
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const navCardLinks = document.querySelectorAll('.nav-card-link');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            // Função central para trocar de abas
+            function switchTab(targetId) {
+                // Esconde todos os conteúdos de abas
+                tabContents.forEach(tab => {
+                    tab.classList.add('hidden');
+                });
+
+                // Mostra o conteúdo da aba alvo
+                const targetTab = document.querySelector(targetId);
+                if (targetTab) {
+                    targetTab.classList.remove('hidden');
+                }
+
+                // Atualiza o estado 'active' nos links de navegação principais (cabeçalho e mobile)
+                navLinks.forEach(link => {
+                    const isActive = link.getAttribute('href') === targetId;
+                    link.classList.toggle('active', isActive);
+                });
+                
+                // Garante que a página role para o topo ao trocar de aba
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                // Fecha o menu mobile se estiver aberto após um clique
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+
+            // Adiciona os event listeners a todos os elementos de navegação
+            const allNavTriggers = [...navLinks, ...navCardLinks];
+            allNavTriggers.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    switchTab(targetId);
+                });
+            });
+
+            // Lógica para o menu mobile
+            mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+            // Lógica para Accordion na aba "Conceitos"
+            const accordionButtons = document.querySelectorAll('.accordion-header');
+            accordionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('span:last-child');
+                    content.classList.toggle('hidden');
+                    icon.textContent = content.classList.contains('hidden') ? '+' : '-';
+                });
+            });
+            
+            // Lógica para o diagrama de Pilares
+            const pillars = document.querySelectorAll('.pillar-segment');
+            const pillarTitle = document.getElementById('pillar-title');
+            const pillarText = document.getElementById('pillar-text');
+            const pillarData = {
+                p1: { title: "Suporte da Alta Administração", text: "Conhecido como 'Tone at the Top', este pilar é a base de tudo. Envolve o compromisso visível e inequívoco da liderança com a cultura de compliance, demonstrado através de ações, comunicações e alocação de recursos." },
+                p2: { title: "Avaliação de Riscos", text: "Processo contínuo de identificação, análise e mitigação dos riscos de compliance específicos da organização (corrupção, fraude, lavagem de dinheiro, etc.). Esta avaliação direciona todas as outras atividades do programa." },
+                p3: { title: "Código de Conduta e Políticas", text: "Documentos formais que traduzem as leis e os valores da empresa em diretrizes claras e práticas para todos os colaboradores. O Código de Conduta é o documento central, suportado por políticas específicas (ex: Política Antissuborno)." },
+                p4: { title: "Controles Internos", text: "Mecanismos e procedimentos implementados para prevenir, detetar e corrigir desvios. Incluem aprovações, segregação de funções, reconciliações e outros controlos financeiros e operacionais baseados nos riscos identificados." },
+                p5: { title: "Treinamento e Comunicação", text: "Assegura que todos os colaboradores e partes interessadas relevantes compreendam as políticas e os seus papéis na manutenção da conformidade. O treinamento deve ser contínuo, prático e adaptado a diferentes públicos." },
+                p6: { title: "Canais de Denúncia", text: "Mecanismos seguros, confidenciais e, se possível, anónimos, que permitem que colaboradores e terceiros reportem suspeitas de irregularidades sem medo de retaliação. A existência de um canal funcional é um requisito crucial." },
+                p7: { title: "Investigações Internas", text: "Um processo estruturado para apurar as denúncias recebidas de forma imparcial, documentada e tempestiva. As investigações devem levar a medidas disciplinares apropriadas e a melhorias nos processos." },
+                p8: { title: "Due Diligence de Terceiros", text: "Análise prévia e contínua de parceiros de negócio (fornecedores, consultores, distribuidores) para avaliar os seus próprios riscos de compliance e garantir que não tragam passivos para a empresa." },
+                p9: { title: "Monitoramento e Auditoria", text: "Verificação contínua (monitoramento) e periódica (auditoria) para garantir que o programa de compliance está a funcionar como planeado e é eficaz. Os resultados são usados para aprimorar o programa." },
+            };
+
+            pillars.forEach(pillar => {
+                pillar.addEventListener('click', () => {
+                    pillars.forEach(p => p.classList.remove('active'));
+                    pillar.classList.add('active');
+                    const pillarId = pillar.dataset.pillar;
+                    pillarTitle.textContent = pillarData[pillarId].title;
+                    pillarText.textContent = pillarData[pillarId].text;
+                });
+            });
+
+            // Lógica para a Biblioteca de Recursos
+            const resources = [
+                { id: 1, type: 'checklist', pillar: 'p8', title: 'Checklist de Due Diligence de Terceiros', url: '#' },
+                { id: 2, type: 'template', pillar: 'p3', title: 'Template de Código de Conduta e Ética', url: '#' },
+                { id: 3, type: 'artigo', pillar: 'p2', title: 'Análise: Como Realizar uma Avaliação de Riscos Eficaz', url: '#' },
+                { id: 4, type: 'checklist', pillar: 'p5', title: 'Checklist para Planeamento de Treinamento', url: '#' },
+            ];
+            const resourceList = document.getElementById('resource-list');
+            const filters = document.getElementById('resource-filters');
+
+            function renderResources(filteredResources) {
+                resourceList.innerHTML = '';
+                if (filteredResources.length === 0) {
+                    resourceList.innerHTML = '<p class="col-span-full text-center text-gray-500">Nenhum recurso encontrado com os filtros selecionados.</p>';
+                    return;
+                }
+                filteredResources.forEach(res => {
+                    const card = `<div class="content-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"><div><h4 class="font-bold">${res.title}</h4><span class="text-sm text-gray-500 capitalize">${res.type}</span></div><a href="${res.url}" target="_blank" class="bg-[#003f5c] text-white px-4 py-2 rounded-md hover:bg-[#005f73] transition-colors self-start sm:self-center">Ver</a></div>`;
+                    resourceList.insertAdjacentHTML('beforeend', card);
+                });
+            }
+
+            function applyFilters() {
+                const selectedTypes = [...document.querySelectorAll('#resource-filters input[type="checkbox"]:checked')].map(el => el.value);
+                const selectedPillar = document.getElementById('pillar-filter').value;
+                
+                let filtered = resources.filter(res => {
+                    const typeMatch = selectedTypes.length === 0 || selectedTypes.includes(res.type);
+                    const pillarMatch = selectedPillar === 'all' || res.pillar === selectedPillar;
+                    return typeMatch && pillarMatch;
+                });
+                renderResources(filtered);
+            }
+
+            filters.addEventListener('change', applyFilters);
+            renderResources(resources);
+        });
+    </script>
+</body>
+</html>

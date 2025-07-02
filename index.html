@@ -6,7 +6,6 @@
     <title>COMPLIANCE Ex Hub - Plataforma Completa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -36,11 +35,11 @@
             @apply font-bold text-blue-600 cursor-pointer hover:underline;
         }
         .tooltip-balloon {
-            @apply absolute z-20 w-64 p-3 text-sm text-white bg-gray-800 rounded-lg shadow-lg;
+            @apply absolute z-40 w-64 p-3 text-sm text-white bg-gray-800 rounded-lg shadow-lg;
             display: none;
         }
         .matrix-table {
-            @apply w-full text-sm text-left text-gray-500;
+            @apply w-full min-w-[800px] md:min-w-full text-sm text-left text-gray-500;
         }
         .matrix-table thead {
             @apply text-xs text-gray-700 uppercase bg-gray-100;
@@ -52,10 +51,16 @@
             @apply bg-white border-b hover:bg-gray-50;
         }
         .matrix-table input, .matrix-table select {
-            @apply w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500;
+            @apply w-full p-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 bg-white;
         }
         #login-screen { display: flex; }
         #app-container { display: none; }
+        #main-nav {
+            transition: transform 0.3s ease-in-out;
+        }
+        #main-content {
+            transition: margin-left 0.3s ease-in-out;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -98,7 +103,7 @@
         </header>
 
         <div class="flex">
-            <nav id="main-nav" class="bg-gray-800 text-white w-64 min-h-screen p-4 space-y-2 transition-all duration-300 -translate-x-full md:translate-x-0 fixed md:relative z-20">
+            <nav id="main-nav" class="bg-gray-800 text-white w-64 min-h-screen p-4 space-y-2 -translate-x-full md:translate-x-0 fixed md:relative z-20">
                 <h2 class="font-bold text-lg border-b border-gray-600 pb-2">Navegação</h2>
                 <a href="#inicio" class="nav-link flex items-center gap-3"><span>🏠</span> Início</a>
                 <a href="#conceitos" class="nav-link flex items-center gap-3"><span>🧠</span> Conceitos</a>
@@ -110,7 +115,7 @@
                 <a href="#autoavaliacao" class="nav-link flex items-center gap-3"><span>✅</span> Autoavaliação</a>
             </nav>
 
-            <main id="main-content" class="flex-1 p-4 md:p-8 transition-all duration-300 md:ml-0">
+            <main id="main-content" class="flex-1 p-4 md:p-8">
                 <!-- Conteúdo das abas -->
                 <div id="inicio" class="tab-content"></div>
                 <div id="conceitos" class="tab-content hidden"></div>
@@ -121,9 +126,9 @@
                 <div id="autoavaliacao" class="tab-content hidden"></div>
 
                 <!-- Navegação por Setas -->
-                <div class="fixed bottom-4 right-4 flex gap-2">
-                    <button id="prev-tab-button" class="w-12 h-12 bg-[var(--primary-color)] text-white rounded-full shadow-lg flex items-center justify-center disabled:bg-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
-                    <button id="next-tab-button" class="w-12 h-12 bg-[var(--primary-color)] text-white rounded-full shadow-lg flex items-center justify-center disabled:bg-gray-400"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
+                <div class="fixed bottom-4 right-4 flex gap-2 z-10">
+                    <button id="prev-tab-button" class="w-12 h-12 bg-[var(--primary-color)] text-white rounded-full shadow-lg flex items-center justify-center disabled:bg-gray-400 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg></button>
+                    <button id="next-tab-button" class="w-12 h-12 bg-[var(--primary-color)] text-white rounded-full shadow-lg flex items-center justify-center disabled:bg-gray-400 transition-colors"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></button>
                 </div>
             </main>
         </div>
@@ -133,36 +138,26 @@
     <div id="tooltip-container"></div>
 
     <script>
-    // --- SCRIPT COMPLETO DA APLICAÇÃO ---
     document.addEventListener('DOMContentLoaded', function() {
         
         // --- LÓGICA DE LOGIN E AUTENTICAÇÃO ---
         const loginScreen = document.getElementById('login-screen');
         const appContainer = document.getElementById('app-container');
         const loginForm = document.getElementById('loginForm');
-        const togglePassword = document.getElementById('togglePassword');
-        const passwordInput = document.getElementById('password');
         const logoutButton = document.getElementById('logout-button');
 
         loginForm.addEventListener('submit', (e) => {
             e.preventDefault();
             loginScreen.style.display = 'none';
             appContainer.style.display = 'block';
-            initializeTabs();
-            switchTab(0); // Inicia na primeira aba
+            initializeContent();
+            switchTab(0);
         });
 
         logoutButton.addEventListener('click', (e) => {
             e.preventDefault();
             appContainer.style.display = 'none';
             loginScreen.style.display = 'flex';
-        });
-
-        togglePassword.addEventListener('click', () => {
-            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-            passwordInput.setAttribute('type', type);
-            document.getElementById('eye-open').classList.toggle('hidden');
-            document.getElementById('eye-closed').classList.toggle('hidden');
         });
 
         // --- LÓGICA DE NAVEGAÇÃO E UI ---
@@ -172,41 +167,49 @@
         const userMenuButton = document.getElementById('user-menu-button');
         const userMenu = document.getElementById('user-menu');
         const homeButton = document.getElementById('home-button');
-        const tabContents = document.querySelectorAll('.tab-content');
         const navLinks = document.querySelectorAll('.nav-link');
         const prevTabButton = document.getElementById('prev-tab-button');
         const nextTabButton = document.getElementById('next-tab-button');
         let currentTabIndex = 0;
-        const TABS_CONFIG = [
-            { id: '#inicio', name: 'Início' },
-            { id: '#conceitos', name: 'Conceitos' },
-            { id: '#pilares', name: 'Pilares' },
-            { id: '#gestao-riscos', name: 'Gestão de Riscos' },
-            { id: '#matriz-gut', name: 'Projetos e Matriz GUT' },
-            { id: '#biblioteca', name: 'Biblioteca' },
-            { id: '#autoavaliacao', name: 'Autoavaliação' },
-        ];
+        const TABS_CONFIG = [ '#inicio', '#conceitos', '#pilares', '#gestao-riscos', '#matriz-gut', '#biblioteca', '#autoavaliacao' ];
 
         navToggleButton.addEventListener('click', () => {
             mainNav.classList.toggle('-translate-x-full');
-            if (window.innerWidth >= 768) { // md breakpoint
-                 mainContent.classList.toggle('md:ml-64');
+            if (window.innerWidth >= 768) {
+                 mainContent.classList.toggle('md:ml-0');
             }
         });
         
         if (window.innerWidth >= 768) {
             mainNav.classList.remove('-translate-x-full');
             mainContent.classList.add('md:ml-64');
+        } else {
+            mainContent.classList.remove('md:ml-64');
         }
 
-        userMenuButton.addEventListener('click', () => userMenu.classList.toggle('hidden'));
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 768) {
+                mainNav.classList.remove('-translate-x-full');
+                mainContent.classList.add('md:ml-64');
+            } else {
+                mainNav.classList.add('-translate-x-full');
+                mainContent.classList.remove('md:ml-64');
+            }
+        });
+
+
+        userMenuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            userMenu.classList.toggle('hidden');
+        });
+        
         homeButton.addEventListener('click', () => switchTab(0));
 
         function switchTab(index) {
             currentTabIndex = index;
-            const targetId = TABS_CONFIG[index].id;
+            const targetId = TABS_CONFIG[index];
 
-            tabContents.forEach(tab => tab.classList.add('hidden'));
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
             document.querySelector(targetId).classList.remove('hidden');
 
             navLinks.forEach(link => {
@@ -235,175 +238,105 @@
         prevTabButton.addEventListener('click', () => { if (currentTabIndex > 0) switchTab(currentTabIndex - 1); });
         nextTabButton.addEventListener('click', () => { if (currentTabIndex < TABS_CONFIG.length - 1) switchTab(currentTabIndex + 1); });
 
-        // --- LÓGICA DE CONTEÚDO DINÂMICO ---
-        function initializeTabs() {
-            document.querySelector('#inicio').innerHTML = `
-                <div class="text-center mb-12">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Plataforma Interativa de Compliance</h2>
-                    <p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Bem-vindo à sua central de inteligência em compliance. Navegue, aprenda e aplique os princípios fundamentais para fortalecer a integridade da sua organização.</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-                     <a href="#conceitos" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[var(--primary-color)]">🧠</div><h3 class="text-xl font-bold mb-2">Conceitos Fundamentais</h3><p class="text-gray-600">Comece por aqui para construir a sua base de conhecimento em compliance.</p></a>
-                     <a href="#pilares" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#58508d]">🏛️</div><h3 class="text-xl font-bold mb-2">Os Pilares do Compliance</h3><p class="text-gray-600">Explore os 9 pilares essenciais de um programa de compliance eficaz.</p></a>
-                     <a href="#gestao-riscos" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#c1121f]">📈</div><h3 class="text-xl font-bold mb-2">Gestão de Riscos</h3><p class="text-gray-600">Identifique, avalie e mitigue os riscos estratégicos e operacionais.</p></a>
-                     <a href="#matriz-gut" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#007f5f]">📊</div><h3 class="text-xl font-bold mb-2">Projetos e Matriz GUT</h3><p class="text-gray-600">Priorize problemas e projetos com base na Gravidade, Urgência e Tendência.</p></a>
-                     <a href="#biblioteca" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#ff6361]">📚</div><h3 class="text-xl font-bold mb-2">Biblioteca de Recursos</h3><p class="text-gray-600">Aceda a templates, checklists e estudos de caso práticos.</p></a>
-                     <a href="#autoavaliacao" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[var(--secondary-color)]">✅</div><h3 class="text-xl font-bold mb-2">Ferramentas de Autoavaliação</h3><p class="text-gray-600">Meça a maturidade do seu programa e identifique áreas de melhoria.</p></a>
-                </div>`;
+        // --- INICIALIZAÇÃO DE CONTEÚDO ---
+        function initializeContent() {
+            const contentMap = {
+                '#inicio': getInicioHTML(),
+                '#conceitos': getConceitosHTML(),
+                '#pilares': getPilaresHTML(),
+                '#gestao-riscos': getGestaoRiscosHTML(),
+                '#matriz-gut': getMatrizGutHTML(),
+                '#biblioteca': getBibliotecaHTML(),
+                '#autoavaliacao': getAutoAvaliacaoHTML(),
+            };
+            for (const [id, html] of Object.entries(contentMap)) {
+                document.querySelector(id).innerHTML = html;
+            }
             
-            document.querySelector('#conceitos').innerHTML = `
-                <div class="text-center mb-12">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Conceitos Fundamentais</h2>
-                    <p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">A base para construir uma cultura de integridade sólida e um programa de <span class="concept-term" data-concept="compliance">compliance</span> eficaz.</p>
-                </div>
-                <div class="max-w-4xl mx-auto space-y-8">
-                    <div class="bg-white p-6 rounded-lg shadow-md">
-                        <h3 class="text-xl sm:text-2xl font-bold mb-4">O que é Compliance?</h3>
-                        <p class="mb-6">
-                            <span class="concept-term" data-concept="compliance">Compliance</span> é o compromisso de uma organização em cumprir todas as leis, regulamentos, normas e padrões éticos aplicáveis às suas atividades. É mais do que apenas seguir regras; é sobre incorporar a <span class="concept-term" data-concept="integridade">integridade</span> na cultura e nas operações diárias da empresa.
-                        </p>
-                        <div class="space-y-2 accordion-container">
-                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Legal</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Sob esta ótica, o compliance foca-se em garantir que a empresa adira estritamente à legislação vigente, como a Lei Anticorrupção (Lei 12.846/2013) e a Lei Geral de Proteção de Dados (LGPD). O objetivo é evitar sanções, multas e responsabilidade legal.</p></div></div>
-                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Ética</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Aqui, o compliance vai além da obrigação legal. Trata-se de agir corretamente, mesmo quando ninguém está a observar. Envolve a promoção de valores como honestidade, transparência e justiça, guiando o comportamento de todos na organização através de um Código de Conduta robusto.</p></div></div>
-                            <div><button class="accordion-header text-base sm:text-lg"><span>A Perspetiva Estratégica</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Nesta visão, o compliance é uma alavanca para o sucesso sustentável. Um programa de compliance forte protege a reputação da marca, abre portas para novos mercados, atrai investimentos (ESG) e torna-se uma vantagem competitiva, demonstrando confiança e fiabilidade a clientes e parceiros.</p></div></div>
-                        </div>
-                    </div>
-                </div>`;
-            
-            document.querySelector('#gestao-riscos').innerHTML = `
-                <div class="text-center mb-12">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Gestão de Riscos</h2>
-                    <p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Ferramentas para identificação, avaliação e tratamento de riscos corporativos.</p>
-                </div>
-                <!-- Sub-abas para Riscos -->
-                <div class="mb-4 border-b border-gray-200">
-                    <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="risk-tabs" role="tablist">
-                        <li class="mr-2" role="presentation"><button class="inline-block p-4 border-b-2 rounded-t-lg" id="strategic-risk-tab" type="button" role="tab" aria-controls="strategic-risk" aria-selected="false">Riscos Estratégicos</button></li>
-                        <li class="mr-2" role="presentation"><button class="inline-block p-4 border-b-2 rounded-t-lg" id="operational-risk-tab" type="button" role="tab" aria-controls="operational-risk" aria-selected="false">Riscos Operacionais</button></li>
-                    </ul>
-                </div>
-                <div id="risk-tab-content">
-                    <div class="hidden p-4 rounded-lg bg-gray-50" id="strategic-risk" role="tabpanel">
-                        <h3 class="text-xl font-bold mb-4">Matriz de Riscos Estratégicos</h3>
-                        <p class="mb-4 text-gray-600">Monitoramento de riscos inerentes aos objetivos da 'EMPRESA X', que são de extrema importância para alcançar as suas metas ou os riscos que catastróficos, ou seja, que pode levar a um possível fim da empresa, seja financeiro, de conformidade, danos fortíssimos à imagem da empresa ou operacional de alta importância.</p>
-                        <div class="overflow-x-auto bg-white rounded-lg shadow"><table id="strategic-risk-matrix" class="matrix-table"></table></div>
-                        <button id="add-strategic-risk-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Risco</button>
-                        <div class="mt-8 bg-white p-4 rounded-lg shadow"><canvas id="strategic-risk-chart"></canvas></div>
-                    </div>
-                    <div class="hidden p-4 rounded-lg bg-gray-50" id="operational-risk" role="tabpanel">
-                         <h3 class="text-xl font-bold mb-4">Matriz de Riscos Operacionais</h3>
-                         <p class="mb-4 text-gray-600">Análise de riscos voltada às atividades cotidianas da empresa em lato sensu, abrangendo processos, pessoas e sistemas.</p>
-                         <div class="overflow-x-auto bg-white rounded-lg shadow"><table id="operational-risk-matrix" class="matrix-table"></table></div>
-                         <button id="add-operational-risk-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Risco</button>
-                         <div class="mt-8 bg-white p-4 rounded-lg shadow"><canvas id="operational-risk-chart"></canvas></div>
-                    </div>
-                </div>`;
-            
-            document.querySelector('#matriz-gut').innerHTML = `
-                <div class="text-center mb-12">
-                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Projetos e Matriz GUT</h2>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <p class="mb-2">A Matriz GUT é uma ferramenta para priorização de problemas ou projetos. Ela se baseia em três critérios:</p>
-                    <ul class="list-disc list-inside mb-4 space-y-1">
-                        <li><strong>Gravidade (G):</strong> O impacto do problema caso ele ocorra.</li>
-                        <li><strong>Urgência (U):</strong> O tempo disponível ou necessário para resolver o problema.</li>
-                        <li><strong>Tendência (T):</strong> O potencial de crescimento do problema se nada for feito.</li>
-                    </ul>
-                    <p class="mb-4">Cada critério é avaliado numa escala de 1 a 5. A multiplicação (G x U x T) gera um score que ajuda a determinar as prioridades. Quanto maior o score, mais prioritário é o problema.</p>
-                    <div class="overflow-x-auto"><table id="gut-matrix" class="matrix-table"></table></div>
-                    <button id="add-gut-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Problema/Projeto</button>
-                </div>`;
-
-            // Adicionar mais inicializadores de abas aqui...
-
-            // Ligar todos os gatilhos de navegação
             document.querySelectorAll('.nav-card-link').forEach(link => {
                 link.addEventListener('click', (e) => {
                     e.preventDefault();
-                    const targetId = link.getAttribute('href');
-                    const targetIndex = TABS_CONFIG.findIndex(tab => tab.id === targetId);
+                    const targetIndex = TABS_CONFIG.indexOf(link.getAttribute('href'));
                     if (targetIndex !== -1) switchTab(targetIndex);
                 });
             });
 
-            // Ligar eventos de UI específicos das abas
-            setupConceptTooltips();
-            setupAccordions();
-            setupRiskMatrix('strategic');
-            setupRiskMatrix('operational');
-            setupGutMatrix();
-            setupRiskTabs();
+            setupEventListeners();
         }
 
+        function setupEventListeners() {
+            setupConceptTooltips();
+            setupAccordions();
+            if(document.getElementById('risk-tabs')) setupRiskTabs();
+            if(document.getElementById('strategic-risk-matrix')) setupRiskMatrix('strategic');
+            if(document.getElementById('operational-risk-matrix')) setupRiskMatrix('operational');
+            if(document.getElementById('gut-matrix')) setupGutMatrix();
+        }
+
+        // --- HTML GETTERS ---
+        function getInicioHTML() {
+            return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Plataforma Interativa de Compliance</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Bem-vindo à sua central de inteligência em compliance. Navegue, aprenda e aplique os princípios fundamentais para fortalecer a integridade da sua organização.</p></div><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"><a href="#conceitos" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[var(--primary-color)]">🧠</div><h3 class="text-xl font-bold mb-2">Conceitos Fundamentais</h3><p class="text-gray-600">Comece por aqui para construir a sua base de conhecimento.</p></a><a href="#pilares" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#58508d]">🏛️</div><h3 class="text-xl font-bold mb-2">Os Pilares do Compliance</h3><p class="text-gray-600">Explore os 9 pilares essenciais de um programa de compliance.</p></a><a href="#gestao-riscos" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#c1121f]">📈</div><h3 class="text-xl font-bold mb-2">Gestão de Riscos</h3><p class="text-gray-600">Identifique, avalie e mitigue os riscos estratégicos e operacionais.</p></a><a href="#matriz-gut" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#007f5f]">📊</div><h3 class="text-xl font-bold mb-2">Projetos e Matriz GUT</h3><p class="text-gray-600">Priorize problemas com base na Gravidade, Urgência e Tendência.</p></a><a href="#biblioteca" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[#ff6361]">📚</div><h3 class="text-xl font-bold mb-2">Biblioteca de Recursos</h3><p class="text-gray-600">Aceda a templates, checklists e estudos de caso práticos.</p></a><a href="#autoavaliacao" class="nav-card-link bg-white p-6 rounded-lg shadow-md transition-all duration-300 text-center hover:shadow-xl hover:-translate-y-1 cursor-pointer"><div class="text-5xl mb-4 text-[var(--secondary-color)]">✅</div><h3 class="text-xl font-bold mb-2">Ferramentas de Autoavaliação</h3><p class="text-gray-600">Meça a maturidade do seu programa e identifique áreas de melhoria.</p></a></div>`;
+        }
+        function getConceitosHTML() {
+            return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Conceitos Fundamentais</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">A base para construir uma cultura de integridade sólida e um programa de <span class="concept-term" data-concept="compliance">compliance</span> eficaz.</p></div><div class="max-w-4xl mx-auto space-y-8"><div class="bg-white p-6 rounded-lg shadow-md"><h3 class="text-xl sm:text-2xl font-bold mb-4">O que é Compliance?</h3><p class="mb-6">O <span class="concept-term" data-concept="compliance">Compliance</span> é o compromisso de uma organização em cumprir todas as leis, regulamentos, normas e padrões éticos aplicáveis às suas atividades. É mais do que apenas seguir regras; é sobre incorporar a <span class="concept-term" data-concept="integridade">integridade</span> na cultura e nas operações diárias da empresa.</p><div class="space-y-2 accordion-container"><div><button class="accordion-header text-base sm:text-lg w-full"><span>A Perspetiva Legal</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Sob esta ótica, o compliance foca-se em garantir que a empresa adira estritamente à legislação vigente, como a Lei Anticorrupção (Lei 12.846/2013) e a Lei Geral de Proteção de Dados (LGPD). O objetivo é evitar sanções, multas e responsabilidade legal.</p></div></div><div><button class="accordion-header text-base sm:text-lg w-full"><span>A Perspetiva Ética</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Aqui, o compliance vai além da obrigação legal. Trata-se de agir corretamente, mesmo quando ninguém está a observar. Envolve a promoção de valores como honestidade, transparência e justiça, guiando o comportamento de todos na organização através de um Código de Conduta robusto.</p></div></div><div><button class="accordion-header text-base sm:text-lg w-full"><span>A Perspetiva Estratégica</span><span class="transform transition-transform duration-300">+</span></button><div class="accordion-content hidden"><p>Nesta visão, o compliance é uma alavanca para o sucesso sustentável. Um programa de compliance forte protege a reputação da marca, abre portas para novos mercados, atrai investimentos (ESG) e torna-se uma vantagem competitiva, demonstrando confiança e fiabilidade a clientes e parceiros.</p></div></div></div></div></div>`;
+        }
+        function getGestaoRiscosHTML() {
+            return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Gestão de Riscos</h2><p class="max-w-3xl mx-auto text-base sm:text-lg text-gray-600">Ferramentas para identificação, avaliação e tratamento de riscos corporativos.</p></div><div class="mb-4 border-b border-gray-200"><ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="risk-tabs" role="tablist"><li class="mr-2" role="presentation"><button class="inline-block p-4 border-b-2 rounded-t-lg" id="strategic-risk-tab" type="button" role="tab" aria-controls="strategic-risk" aria-selected="false">Riscos Estratégicos</button></li><li class="mr-2" role="presentation"><button class="inline-block p-4 border-b-2 rounded-t-lg" id="operational-risk-tab" type="button" role="tab" aria-controls="operational-risk" aria-selected="false">Riscos Operacionais</button></li></ul></div><div id="risk-tab-content"><div class="hidden p-0 md:p-4 rounded-lg bg-gray-50" id="strategic-risk" role="tabpanel"><h3 class="text-xl font-bold mb-4">Matriz de Riscos Estratégicos</h3><p class="mb-4 text-gray-600">Monitoramento de riscos que podem impactar os objetivos da 'EMPRESA X' ou que representem uma ameaça catastrófica à sua continuidade (financeira, reputacional, operacional).</p><div class="overflow-x-auto bg-white rounded-lg shadow"><table id="strategic-risk-matrix" class="matrix-table"></table></div><button id="add-strategic-risk-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Risco</button><div class="mt-8 bg-white p-4 rounded-lg shadow"><canvas id="strategic-risk-chart"></canvas></div></div><div class="hidden p-0 md:p-4 rounded-lg bg-gray-50" id="operational-risk" role="tabpanel"><h3 class="text-xl font-bold mb-4">Matriz de Riscos Operacionais</h3><p class="mb-4 text-gray-600">Análise de riscos voltada às atividades cotidianas da empresa, abrangendo processos, pessoas e sistemas, que podem impactar a credibilidade com clientes e reguladores.</p><div class="overflow-x-auto bg-white rounded-lg shadow"><table id="operational-risk-matrix" class="matrix-table"></table></div><button id="add-operational-risk-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Risco</button><div class="mt-8 bg-white p-4 rounded-lg shadow"><canvas id="operational-risk-chart"></canvas></div></div></div>`;
+        }
+        function getMatrizGutHTML() {
+            return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Projetos e Matriz GUT</h2></div><div class="bg-white p-6 rounded-lg shadow-md"><p class="mb-2">A Matriz GUT é uma ferramenta para priorização de problemas ou projetos. Ela se baseia em três critérios:</p><ul class="list-disc list-inside mb-4 space-y-1"><li><strong>Gravidade (G):</strong> O impacto do problema caso ele ocorra.</li><li><strong>Urgência (U):</strong> O tempo disponível ou necessário para resolver o problema.</li><li><strong>Tendência (T):</strong> O potencial de crescimento do problema se nada for feito.</li></ul><p class="mb-4">Cada critério é avaliado numa escala de 1 a 5. A multiplicação (G x U x T) gera um score que ajuda a determinar as prioridades. Quanto maior o score, mais prioritário é o problema.</p><div class="overflow-x-auto"><table id="gut-matrix" class="matrix-table"></table></div><button id="add-gut-row" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Adicionar Problema/Projeto</button></div>`;
+        }
+        function getPilaresHTML() { return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Placeholder Pilares</h2></div>`; }
+        function getBibliotecaHTML() { return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Placeholder Biblioteca</h2></div>`; }
+        function getAutoAvaliacaoHTML() { return `<div class="text-center mb-12"><h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-[var(--primary-color)] mb-4">Placeholder Autoavaliação</h2></div>`; }
+        
         // --- LÓGICA DAS FERRAMENTAS ---
         function setupRiskTabs() {
             const tabs = document.querySelectorAll('#risk-tabs button');
             const tabContents = document.querySelectorAll('#risk-tab-content > div');
-            
             tabs.forEach(tab => {
                 tab.addEventListener('click', () => {
-                    tabs.forEach(t => t.setAttribute('aria-selected', 'false'));
+                    tabs.forEach(t => { t.setAttribute('aria-selected', 'false'); t.classList.remove('border-blue-600', 'text-blue-600'); t.classList.add('border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); });
                     tab.setAttribute('aria-selected', 'true');
-                    
+                    tab.classList.add('border-blue-600', 'text-blue-600');
                     tabContents.forEach(content => content.classList.add('hidden'));
-                    const target = document.querySelector(tab.getAttribute('aria-controls'));
+                    const target = document.getElementById(tab.getAttribute('aria-controls'));
                     if(target) target.classList.remove('hidden');
                 });
             });
-            // Ativar a primeira aba por padrão
             if(tabs.length > 0) tabs[0].click();
         }
 
         function setupRiskMatrix(type) {
-            const tableId = `${type}-risk-matrix`;
-            const addButtonId = `add-${type}-risk-row`;
+            const table = document.getElementById(`${type}-risk-matrix`);
+            const addButton = document.getElementById(`add-${type}-risk-row`);
             const chartId = `${type}-risk-chart`;
-            const table = document.getElementById(tableId);
-            const addButton = document.getElementById(addButtonId);
             if (!table || !addButton) return;
             
             let chartInstance = null;
-            
-            const areaOptions = ['Alta Gestão', 'Financeiro', 'Logístico', 'Recursos Humanos', 'TI', 'Operações', 'Jurídico'];
-            const effectivenessOptions = { 'Alta': 1, 'Média': 2, 'Baixa': 3 };
+            const areaOptions = ['Alta Gestão', 'Financeiro', 'Logístico', 'Recursos Humanos', 'TI', 'Operações', 'Jurídico', 'Marketing'];
+            const categoryOptions = {
+                'conformidade': 'Riscos de sanções legais, regulatórias ou perda de licenças por não conformidade com leis e normas.',
+                'financeiro': 'Riscos de perdas financeiras devido a má gestão, fraude, volatilidade de mercado ou falhas de crédito.',
+                'operacional': 'Riscos de perdas resultantes de falhas em processos internos, pessoas, sistemas ou de eventos externos. Afeta diretamente a entrega de produtos/serviços e a credibilidade.',
+                'reputacional': 'Riscos de danos à imagem e à marca da empresa perante clientes, investidores e o público.'
+            };
             const probabilityOptions = { '1 (Rara)': 1, '2 (Improvável)': 2, '3 (Possível)': 3, '4 (Provável)': 4, '5 (Quase Certa)': 5 };
             const impactOptions = { '1 (Insignificante)': 1, '2 (Menor)': 2, '3 (Moderado)': 3, '4 (Maior)': 4, '5 (Catastrófico)': 5 };
 
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Nome do Risco</th>
-                        <th>Área(s)</th>
-                        <th>Probabilidade</th>
-                        <th>Impacto</th>
-                        <th>Nível de Risco</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>`;
-            
+            table.innerHTML = `<thead><tr><th>Nome do Risco</th><th>Categoria <span class="concept-term" data-concept="risk_category">(?)</span></th><th>Área(s)</th><th>Probabilidade</th><th>Impacto</th><th>Nível de Risco</th></tr></thead><tbody></tbody>`;
             const tbody = table.querySelector('tbody');
 
-            function addRiskRow(riskName = '', areas = [], prob = 1, imp = 1) {
+            function addRiskRow(data = {}) {
+                const { riskName = '', category = 'operacional', areas = [], prob = 1, imp = 1 } = data;
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="text" class="risk-name" value="${riskName}"></td>
-                    <td>
-                        <select class="risk-areas" multiple>
-                            ${areaOptions.map(opt => `<option value="${opt}" ${areas.includes(opt) ? 'selected' : ''}>${opt}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="risk-prob">
-                            ${Object.entries(probabilityOptions).map(([key, val]) => `<option value="${val}" ${val == prob ? 'selected' : ''}>${key}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td>
-                        <select class="risk-impact">
-                            ${Object.entries(impactOptions).map(([key, val]) => `<option value="${val}" ${val == imp ? 'selected' : ''}>${key}</option>`).join('')}
-                        </select>
-                    </td>
-                    <td class="risk-level font-bold"></td>`;
+                    <td><input type="text" class="risk-name" value="${riskName}" placeholder="Descreva o risco..."></td>
+                    <td><select class="risk-category">${Object.keys(categoryOptions).map(opt => `<option value="${opt}" ${opt === category ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`).join('')}</select></td>
+                    <td><select class="risk-areas" multiple>${areaOptions.map(opt => `<option value="${opt}" ${areas.includes(opt) ? 'selected' : ''}>${opt}</option>`).join('')}</select></td>
+                    <td><select class="risk-prob">${Object.entries(probabilityOptions).map(([key, val]) => `<option value="${val}" ${val == prob ? 'selected' : ''}>${key}</option>`).join('')}</select></td>
+                    <td><select class="risk-impact">${Object.entries(impactOptions).map(([key, val]) => `<option value="${val}" ${val == imp ? 'selected' : ''}>${key}</option>`).join('')}</select></td>
+                    <td class="risk-level font-bold text-center"></td>`;
                 tbody.appendChild(row);
                 row.querySelectorAll('select, input').forEach(el => el.addEventListener('change', updateAllRisks));
             }
@@ -417,20 +350,15 @@
                     const level = prob * impact;
                     const levelCell = row.querySelector('.risk-level');
                     levelCell.textContent = level;
-                    levelCell.dataset.level = level;
+                    row.dataset.level = level;
                     
                     let bgColor = 'bg-green-200';
                     if (level > 4) bgColor = 'bg-yellow-200';
                     if (level > 9) bgColor = 'bg-orange-200';
-                    if (level > 15) bgColor = 'bg-red-200';
-                    levelCell.className = `risk-level font-bold text-center ${bgColor}`;
+                    if (level > 15) bgColor = 'bg-red-200 text-white';
+                    levelCell.className = `risk-level font-bold text-center align-middle ${bgColor}`;
                     
-                    riskData.push({
-                        x: prob,
-                        y: impact,
-                        r: level / 2, // bubble size
-                        label: row.querySelector('.risk-name').value || 'Risco sem nome'
-                    });
+                    riskData.push({ x: prob, y: impact, r: level / 1.5, label: row.querySelector('.risk-name').value || 'Risco' });
                 });
                 sortRiskTable();
                 updateRiskChart(riskData);
@@ -438,55 +366,30 @@
 
             function sortRiskTable() {
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                rows.sort((a, b) => {
-                    const levelA = parseInt(a.querySelector('.risk-level').dataset.level);
-                    const levelB = parseInt(b.querySelector('.risk-level').dataset.level);
-                    return levelB - levelA;
-                });
+                rows.sort((a, b) => (b.dataset.level || 0) - (a.dataset.level || 0));
                 rows.forEach(row => tbody.appendChild(row));
             }
 
             function updateRiskChart(data) {
-                const ctx = document.getElementById(chartId).getContext('2d');
-                if (chartInstance) {
-                    chartInstance.destroy();
-                }
+                const ctx = document.getElementById(chartId)?.getContext('2d');
+                if (!ctx) return;
+                if (chartInstance) chartInstance.destroy();
                 chartInstance = new Chart(ctx, {
                     type: 'bubble',
-                    data: {
-                        datasets: [{
-                            label: 'Riscos Estratégicos',
-                            data: data,
-                            backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                            borderColor: 'rgb(255, 99, 132)',
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            title: { display: true, text: 'Mapa de Calor de Riscos (Impacto vs. Probabilidade)' },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        const d = context.raw;
-                                        return `${d.label}: (Prob: ${d.x}, Impacto: ${d.y}, Nível: ${d.x*d.y})`;
-                                    }
-                                }
-                            }
-                        },
-                        scales: {
-                            x: { title: { display: true, text: 'Probabilidade' }, min: 0, max: 6 },
-                            y: { title: { display: true, text: 'Impacto' }, min: 0, max: 6 }
-                        }
-                    }
+                    data: { datasets: [{ label: `Riscos ${type.charAt(0).toUpperCase() + type.slice(1)}`, data: data, backgroundColor: 'rgba(255, 99, 132, 0.5)', borderColor: 'rgb(255, 99, 132)' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: 'Mapa de Calor de Riscos (Impacto vs. Probabilidade)' }, tooltip: { callbacks: { label: (c) => `${c.raw.label}: (Prob: ${c.raw.x}, Impacto: ${c.raw.y}, Nível: ${c.raw.x*c.raw.y})` } } }, scales: { x: { title: { display: true, text: 'Probabilidade' }, min: 0, max: 5.5 }, y: { title: { display: true, text: 'Impacto' }, min: 0, max: 5.5 } } }
                 });
             }
 
             addButton.addEventListener('click', () => addRiskRow());
-            // Add initial example data
-            addRiskRow('Crise de imagem por falha de produto', ['Alta Gestão', 'Operações'], 4, 5);
-            addRiskRow('Ataque cibernético massivo', ['TI'], 3, 5);
-            addRiskRow('Perda de cliente chave', ['Financeiro'], 2, 4);
+            // Exemplo de dados iniciais
+            if (type === 'strategic') {
+                addRiskRow({ riskName: 'Crise de imagem por falha de produto', category: 'reputacional', areas: ['Alta Gestão', 'Operações'], prob: 4, imp: 5 });
+                addRiskRow({ riskName: 'Ataque cibernético massivo com roubo de dados', category: 'operacional', areas: ['TI', 'Jurídico'], prob: 3, imp: 5 });
+            } else {
+                addRiskRow({ riskName: 'Falha no processo de faturamento', category: 'financeiro', areas: ['Financeiro'], prob: 3, imp: 3 });
+                addRiskRow({ riskName: 'Não conformidade com nova regulação ambiental', category: 'conformidade', areas: ['Jurídico', 'Operações'], prob: 2, imp: 4 });
+            }
             updateAllRisks();
         }
         
@@ -494,27 +397,18 @@
             const table = document.getElementById('gut-matrix');
             if(!table) return;
             
-            table.innerHTML = `
-                <thead>
-                    <tr>
-                        <th>Problema / Projeto</th>
-                        <th>G (1-5)</th>
-                        <th>U (1-5)</th>
-                        <th>T (1-5)</th>
-                        <th>Score (G*U*T)</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>`;
+            table.innerHTML = `<thead><tr><th>Problema / Projeto</th><th>G (1-5)</th><th>U (1-5)</th><th>T (1-5)</th><th>Score (G*U*T)</th></tr></thead><tbody></tbody>`;
             const tbody = table.querySelector('tbody');
 
-            function addGutRow(problem = '', g = 1, u = 1, t = 1) {
+            function addGutRow(data = {}) {
+                const { problem = '', g = 1, u = 1, t = 1 } = data;
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td><input type="text" value="${problem}"></td>
+                    <td><input type="text" value="${problem}" placeholder="Descreva o problema..."></td>
                     <td><input type="number" class="gut-g" min="1" max="5" value="${g}"></td>
                     <td><input type="number" class="gut-u" min="1" max="5" value="${u}"></td>
                     <td><input type="number" class="gut-t" min="1" max="5" value="${t}"></td>
-                    <td class="gut-score font-bold"></td>`;
+                    <td class="gut-score font-bold text-center align-middle"></td>`;
                 tbody.appendChild(row);
                 row.querySelectorAll('input').forEach(el => el.addEventListener('input', updateGutScores));
             }
@@ -522,28 +416,25 @@
             function updateGutScores() {
                 const rows = tbody.querySelectorAll('tr');
                 rows.forEach(row => {
-                    const g = parseInt(row.querySelector('.gut-g').value) || 0;
-                    const u = parseInt(row.querySelector('.gut-u').value) || 0;
-                    const t = parseInt(row.querySelector('.gut-t').value) || 0;
+                    const g = Math.max(1, Math.min(5, parseInt(row.querySelector('.gut-g').value) || 1));
+                    const u = Math.max(1, Math.min(5, parseInt(row.querySelector('.gut-u').value) || 1));
+                    const t = Math.max(1, Math.min(5, parseInt(row.querySelector('.gut-t').value) || 1));
                     const score = g * u * t;
-                    const scoreCell = row.querySelector('.gut-score');
-                    scoreCell.textContent = score;
-                    scoreCell.dataset.score = score;
+                    row.querySelector('.gut-score').textContent = score;
+                    row.dataset.score = score;
                 });
                 sortGutTable();
             }
 
             function sortGutTable() {
                 const rows = Array.from(tbody.querySelectorAll('tr'));
-                rows.sort((a, b) => (b.querySelector('.gut-score').dataset.score || 0) - (a.querySelector('.gut-score').dataset.score || 0));
+                rows.sort((a, b) => (b.dataset.score || 0) - (a.dataset.score || 0));
                 rows.forEach(row => tbody.appendChild(row));
             }
             
             document.getElementById('add-gut-row').addEventListener('click', () => addGutRow());
-            // Add initial examples
-            addGutRow('Sistema de faturamento desatualizado', 5, 4, 3);
-            addGutRow('Alta rotatividade na equipe de vendas', 4, 5, 4);
-            addGutRow('Processo de onboarding de clientes ineficiente', 3, 3, 5);
+            addGutRow({ problem: 'Sistema de faturamento desatualizado', g: 5, u: 4, t: 3 });
+            addGutRow({ problem: 'Alta rotatividade na equipe de vendas', g: 4, u: 5, t: 4 });
             updateGutScores();
         }
 
@@ -551,26 +442,44 @@
             const container = document.getElementById('tooltip-container');
             const definitions = {
                 compliance: 'O compromisso de uma organização em cumprir todas as leis, regulamentos, normas e padrões éticos aplicáveis às suas atividades.',
-                integridade: 'Agir com honestidade, justiça e consistência, mesmo quando ninguém está a observar. É um pilar fundamental da cultura de compliance.'
+                integridade: 'Agir com honestidade, justiça e consistência, mesmo quando ninguém está a observar. É um pilar fundamental da cultura de compliance.',
+                risk_category: 'Classificação do risco quanto à sua natureza principal. Ajuda a direcionar a análise e o tratamento.'
             };
             document.body.addEventListener('click', (e) => {
                 const existingTooltip = container.querySelector('.tooltip-balloon');
-                if (existingTooltip) existingTooltip.remove();
+                if (existingTooltip && !existingTooltip.contains(e.target) && e.target.dataset.concept !== existingTooltip.dataset.concept) {
+                    existingTooltip.remove();
+                }
 
                 if (e.target.classList.contains('concept-term')) {
+                    e.stopPropagation();
                     const concept = e.target.dataset.concept;
-                    const definition = definitions[concept];
-                    if (definition) {
-                        const tooltip = document.createElement('div');
-                        tooltip.className = 'tooltip-balloon';
-                        tooltip.innerHTML = `${definition} <button class="font-bold float-right ml-2">[x]</button>`;
-                        container.appendChild(tooltip);
-                        
-                        const rect = e.target.getBoundingClientRect();
-                        tooltip.style.left = `${rect.left + window.scrollX}px`;
-                        tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
-                        tooltip.style.display = 'block';
+                    if (existingTooltip && existingTooltip.dataset.concept === concept) {
+                        existingTooltip.remove();
+                        return;
                     }
+                    if(existingTooltip) existingTooltip.remove();
+
+                    const definition = definitions[concept] || 'Definição não encontrada.';
+                    const tooltip = document.createElement('div');
+                    tooltip.className = 'tooltip-balloon';
+                    tooltip.dataset.concept = concept;
+                    tooltip.innerHTML = `${definition} <button class="font-bold float-right ml-2">[x]</button>`;
+                    container.appendChild(tooltip);
+                    
+                    const rect = e.target.getBoundingClientRect();
+                    tooltip.style.left = `${rect.left + window.scrollX}px`;
+                    tooltip.style.top = `${rect.bottom + window.scrollY + 5}px`;
+                    tooltip.style.display = 'block';
+                }
+            });
+            document.body.addEventListener('click', (e) => {
+                const existingTooltip = container.querySelector('.tooltip-balloon');
+                if(existingTooltip && !existingTooltip.contains(e.target) && !e.target.classList.contains('concept-term')) {
+                    existingTooltip.remove();
+                }
+                if(userMenu && !userMenu.contains(e.target) && !userMenuButton.contains(e.target)) {
+                    userMenu.classList.add('hidden');
                 }
             });
         }
